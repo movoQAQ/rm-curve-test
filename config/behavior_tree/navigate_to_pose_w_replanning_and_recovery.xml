@@ -1,0 +1,70 @@
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+
+    <RecoveryNode number_of_retries="6" name="ShouldBumpyRecovery">
+
+      <ReactiveSequence name="NavigateWithForceRecoveryCheck">
+
+        <Inverter>
+          <ShouldForceRecovery />
+        </Inverter>
+
+        <PipelineSequence name="NavigateWithReplanning">
+          <ControllerSelector selected_controller="{selected_controller}"
+            default_controller="FollowPath" topic_name="controller_selector" />
+          <PlannerSelector selected_planner="{selected_planner}" default_planner="GridBased"
+            topic_name="planner_selector" />
+          <RateController hz="1.0">
+            <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+              <Sequence name="ComputeAndSmoothPath">
+                <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"
+                  error_code_id="{compute_path_error_code}" />
+                <SmoothPath unsmoothed_path="{path}" smoothed_path="{path}"
+                  error_code_id="{smoother_error_code}" />
+              </Sequence>
+              <Sequence>
+                <WouldAPlannerRecoveryHelp error_code="{compute_path_error_code}" />
+                <ClearEntireCostmap name="ClearGlobalCostmap-Context"
+                  service_name="global_costmap/clear_entirely_global_costmap" />
+              </Sequence>
+            </RecoveryNode>
+          </RateController>
+          <RecoveryNode number_of_retries="1" name="FollowPath">
+            <FollowPath path="{path}" controller_id="{selected_controller}"
+              error_code_id="{follow_path_error_code}" />
+            <Sequence>
+              <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}" />
+              <ClearEntireCostmap name="ClearLocalCostmap-Context"
+                service_name="local_costmap/clear_entirely_local_costmap" />
+            </Sequence> 
+          </RecoveryNode>
+        </PipelineSequence>
+
+      </ReactiveSequence>
+      <Sequence>
+        <Fallback>
+          <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}" />
+          <WouldAPlannerRecoveryHelp error_code="{compute_path_error_code}" />
+          <!-- 特殊情况的Escape -->
+          <ForceFailure>
+            <BumpyEscape robot_frame="base_link_fake" map_frame ="map" looking_radius="0.5"
+              backup_dist="0.2" backup_speed="0.5" />
+          </ForceFailure>
+        </Fallback>
+        <ReactiveFallback name="RecoveryFallback">
+          <GoalUpdated />
+          <RoundRobin name="RecoveryActions">
+            <Sequence name="ClearingActions">
+              <ClearEntireCostmap name="ClearLocalCostmap-Subtree"
+                service_name="local_costmap/clear_entirely_local_costmap" />
+              <ClearEntireCostmap name="ClearGlobalCostmap-Subtree"
+                service_name="global_costmap/clear_entirely_global_costmap" />
+            </Sequence>
+            <Escape robot_frame="base_link_fake" looking_radius="0.5" backup_dist="0.20"
+              backup_speed="0.1" />
+          </RoundRobin>
+        </ReactiveFallback>
+      </Sequence>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>

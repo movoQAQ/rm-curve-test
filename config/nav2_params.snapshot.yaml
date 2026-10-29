@@ -1,0 +1,637 @@
+# amcl:
+#   ros__parameters:
+#     use_sim_time: false
+#     alpha1: 0.2
+#     alpha2: 0.2
+#     alpha3: 0.2
+#     alpha4: 0.2
+#     alpha5: 0.2
+#     base_frame_id: "aft_mapped"
+#     beam_skip_distance: 0.5
+#     beam_skip_error_threshold: 0.9
+#     beam_skip_threshold: 0.3
+#     do_beamskip: false
+#     global_frame_id: "map"
+#     lambda_short: 0.1
+#     laser_likelihood_max_dist: 2.0
+#     laser_max_range: 100.0
+#     laser_min_range: -1.0
+#     laser_model_type: "likelihood_field"
+#     max_beams: 60
+#     max_particles: 3000
+#     min_particles: 1000
+#     odom_frame_id: "odom"
+#     pf_err: 0.05
+#     pf_z: 0.99
+#     recovery_alpha_fast: 0.0
+#     recovery_alpha_slow: 0.0
+#     resample_interval: 1
+#     robot_model_type: "nav2_amcl::OmniMotionModel"
+#     save_pose_rate: 0.5
+#     sigma_hit: 0.2
+#     tf_broadcast: true
+#     transform_tolerance: 1.0
+#     update_min_a: 0.2
+#     update_min_d: 0.25
+#     z_hit: 0.5
+#     z_max: 0.05
+#     z_rand: 0.5
+#     z_short: 0.05
+#     scan_topic: /scan
+#     map_topic: /map
+#     set_initial_pose: true
+#     initial_pose_covariance:
+#       x: 0.1
+#       y: 0.1
+#       yaw: 0.1
+
+bt_navigator:
+  ros__parameters:
+    global_frame: map
+    robot_base_frame: base_link_fake
+    odom_topic: /odom
+    bt_loop_duration: 10
+    default_server_timeout: 100
+    wait_for_service_timeout: 100
+    action_server_result_timeout: 900.0
+    navigators: ["navigate_to_pose", "navigate_through_poses"]
+    navigate_to_pose:
+      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
+    navigate_through_poses:
+      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+    # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
+    # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
+    # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
+    # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
+    default_nav_through_poses_bt_xml : config/behavior_tree/navigate_through_poses_w_replanning_and_recovery.xml
+    default_nav_to_pose_bt_xml : config/behavior_tree/navigate_to_pose_w_replanning_and_recovery.xml
+    # plugin_lib_names is used to add custom BT plugins to the executor (vector of strings).
+    # Built-in plugins are added automatically
+    plugin_lib_names: 
+      - nav2_escape_action_bt_node
+      - force_recovery_condition_bt_node      #
+      - nav2_bumpy_escape_action_bt_node      #
+
+    error_code_names:
+      - compute_path_error_code
+      - follow_path_error_code
+      # - backup_error_code
+
+# route_server:
+#   ros__parameters:
+
+#     base_frame: "base_link_fake"                       # Robot's base frame
+#     route_frame: "map"                            # Global reference frame
+#     path_density: 0.05                            # Density of points for generating the dense nav_msgs/Path from route (m)
+#     max_iterations: 0                             # Maximum number of search iterations, if 0, uses maximum possible
+#     max_planning_time: 2.0                        # Maximum planning time (seconds)
+#     smoothing_corners: true                       # Whether to smooth corners formed by adjacent edges or not
+#     smoothing_radius: 1.0                         # Radius of corner to fit into the corner
+
+#     graph_file_loader: "GeoJsonGraphFileLoader"   # Name of default file loader
+#     plugin: nav2_route::GeoJsonGraphFileLoader  # file loader plugin to use
+#     graph_filepath: "reference_navigation/sample_graph.geojson"                            # file path to graph to use
+
+#     edge_cost_functions: ["DistanceScorer", "DynamicEdgesScorer"]  # Edge scoring cost functions to use
+#     DistanceScorer:
+#       plugin: "nav2_route::DistanceScorer"
+#     DynamicEdgesScorer:
+#       plugin: "nav2_route::DynamicEdgesScorer"
+
+#     operations: ["AdjustSpeedLimit", "ReroutingService"] # Route operations plugins to use
+#     AdjustSpeedLimit:
+#       plugin: "nav2_route::AdjustSpeedLimit"
+#     ReroutingService:
+#       plugin: "nav2_route::ReroutingService"
+
+#     tracker_update_rate: 50.0                     # Rate at which to check the status of path tracking
+#     aggregate_blocked_ids: false                  # Whether to aggregate the blocked IDs reported by route operations over the lifespan of the navigation request or only use the currently blocked IDs.
+#     boundary_radius_to_achieve_node: 1.0          # Radius (m) near boundary nodes (e.g. start/end) to enable evaluation of achievement metric
+#     radius_to_achieve_node: 2.0                   # Radius (m) near route nodes as preliminary condition for evaluation of achievement metric
+
+#     max_prune_dist_from_edge: 8.0                       # Max distance from an edge to consider pruning it as in-progress (e.g. if we're too far away from the edge, its nonsensical to prune it)
+#     min_prune_dist_from_goal: 0.15                      # Min distance from goal node away from goal pose to consider goal node pruning as considering it as being passed (in case goal pose is very close to a goal node, but not exact)
+#     min_prune_dist_from_start: 0.10                     # Min distance from start node away from start pose to consider start node pruning as considering it as being passed (in case start pose is very close to a start node, but not exact)
+#     prune_goal: true     
+
+
+
+bt_navigator_navigate_through_poses_rclcpp_node:
+  ros__parameters:
+    use_sim_time: False
+
+bt_navigator_navigate_to_pose_rclcpp_node:
+  ros__parameters:
+    use_sim_time: False
+
+recoveries_server:
+  ros__parameters:
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    recovery_plugins: ["bumpyescape","escape","backup"]
+    # spin:
+    #   plugin: "nav2_recoveries/Spin"
+    backup:
+      plugin: "nav2_recoveries/BackUp"
+    escape:
+      plugin: "nav2_recoveries/Escape"
+    bumpyescape:
+      plugin: "nav2_recoveries/BumpyEscape"
+    # wait:
+    #   plugin: "nav2_recoveries/Wait"
+    global_frame: odom
+    robot_base_frame: base_link_fake
+    transform_timeout: 0.1
+    simulate_ahead_time: 5.0
+    max_rotational_vel: 1.0
+    min_rotational_vel: 0.4
+    rotational_acc_lim: 3.2
+
+controller_server:
+  ros__parameters:
+    use_sim_time: False
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.001
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
+    controller_plugins: ["FollowPath"]
+    speed_limit_topic: "/speed_limit"
+    # Progress checker parameters
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 60.0
+    # Goal checker parameters
+    # precise_goal_checker:
+    #  plugin: "nav2_controller::SimpleGoalChecker"
+    #  xy_goal_tolerance: 0.25
+    #  yaw_goal_tolerance: 0.25
+    #  stateful: True
+    general_goal_checker:
+      stateful: True
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.5
+      yaw_goal_tolerance: 3.14
+
+
+    FollowPath:
+        #plugin: "pb_omni_pid_pursuit_controller::OmniPidPursuitController"
+      # plugin: "nav2_mppi_controller::MPPIController"
+      # # approach_distance: 2.5  #距目标时开始限速
+      # # approach_velocity: 0.2
+      # # direct_approach_distance: 2.0  #进入直接驱动模式的距离，绕过MPPI防止画弧
+      # # direct_approach_kp: 3.0  #直接驱动P控制增益
+      # time_steps: 56  #增加到80，预测时域4.8s，让MPPI能看到冲过目标的后果
+      # model_dt: 0.05  #稍微放大步长，配合time_steps延长预测时域
+      # batch_size: 2000 #控制器的采样数。
+
+      # vx_std: 0.3 #增大采样多样性，让MPPI能采到更多减速/停止轨迹
+      # vy_std: 0.3 
+      # wz_std: 0.2
+
+      # vx_max: 2.5
+      # vy_max: 2.5
+      # wz_max: 1.0
+
+      # vx_min: -2.5
+      # vy_min: -2.5
+      # wz_min: -1.0
+
+      # ax_max: 15.0 #加速度提高，高速时能快速响应
+      # ay_max: 15.0
+      # az_max: 1.0
+
+      # ax_min: -10.0 #关键：制动力必须对称，高速下刹得住
+      # ay_min: -10.0
+      # az_min: -10.0
+
+      # iteration_count: 1
+      # prune_distance: 3.5 #高速下提前剪枝已通过的路径点
+      # transform_tolerance: 0.1
+      # temperature: 0.25 #大幅降低：让 MPPI 更果断选最优轨迹，不在次优之间摇摆
+      # gamma: 0.03 #稍微提高正则化，减少激进抖动
+      # motion_model: "Omni" #控制器的运动模型。
+      # visualize: false #是否可视化。
+      # reset_period: 1.0 # (only in Humble)
+      # TrajectoryVisualizer:
+      #   trajectory_step: 5 #是指在可视化轨迹时，每隔多少个轨迹点绘制一个点。
+      #   time_step: 3 #是指在可视化轨迹时，每隔多少个时间步长绘制一个点。
+      # critics: [
+      #           "GoalCritic", "PathFollowCritic", 
+      #           "PathAlignCritic", "ObstaclesCritic"
+      #           ]
+
+      # ConstraintCritic:
+      #   enabled: true
+      #   cost_power: 1
+      #   cost_weight: 4.0
+
+      # GoalCritic: #必须开启，否则机器人没有到达目标的动力
+      #   enabled: true
+      #   cost_power: 1
+      #   cost_weight: 18.0 #提高权重，增强最终接近阶段的目标吸引力，防止弧线绕圈
+      #   threshold_to_consider: 2.0
+      # ObstaclesCritic: #开启提供额外的障碍物排斥力
+      #   enabled: true
+      #   cost_power: 1
+      #   repulsion_weight: 1.0 #排斥权重
+      #   critical_weight: 20.0 #近距离障碍物惩罚
+      #   consider_footprint: false #用圆形近似，omni机器人更高效
+      #   collision_cost: 10000.0
+      #   collision_margin_distance: 0.25 #碰撞边界余量
+      #   near_goal_distance: 0.5
+
+      # CostCritic: #通过 costmap 梯度引导避障
+      #   enabled: true
+      #   cost_power: 1
+      #   cost_weight: 3.8 #适当降低，配合修正后的 inflation 梯度
+      #   critical_cost: 253.0 #关键修正！只有 inscribed/lethal 才触发碰撞惩罚，不再把整个膨胀区都当碰撞
+      #   consider_footprint: true
+      #   collision_cost: 1000000.0
+      #   near_goal_distance: 0.5
+      #   trajectory_point_step: 2
+
+      # PathFollowCritic: #必须开启，这是防止乱跑的核心
+      #   enabled: true
+      #   cost_power: 1
+      #   cost_weight: 20.0
+      #   offset_from_furthest: 10 #关注路径前方更远的点
+      #   threshold_to_consider: 2.0 #2.0 #放大关闭距离，让GoalCritic在近目标区域主导，防止画弧
+
+      # PathAlignCritic: #让轨迹方向与路径对齐，高速下更平滑
+      #   enabled: true
+      #   cost_power: 1
+      #   cost_weight: 18.0
+      #   max_path_occupancy_ratio: 0.05
+      #   trajectory_point_step: 4
+      #   threshold_to_consider: 1.2 #1.4 #放大关闭距离，与PathFollowCritic同步，减少近目标干扰
+      #   offset_from_furthest: 20
+      #   use_path_orientations: false #omni机器人用运动方向而非朝向
+    
+      plugin: "pb_omni_pid_pursuit_controller::OmniPidPursuitController"
+      translation_kp: 6.0
+      translation_ki: 0.0
+      translation_kd: 0.0
+      enable_rotation: false
+      rotation_kp: 3.0
+      rotation_ki: 0.1
+      rotation_kd: 0.3
+      transform_tolerance: 0.2
+      min_max_sum_error: 1.0
+      lookahead_dist: 1.0
+      use_velocity_scaled_lookahead_dist: true
+      lookahead_time: 0.7
+      min_lookahead_dist: 0.7
+      max_lookahead_dist: 1.4
+      use_interpolation: True
+      use_rotate_to_heading: false
+      use_rotate_to_heading_treshold: 0.1
+      min_approach_linear_velocity: 0.0
+      approach_velocity_scaling_dist: 1.5
+      v_linear_min: -2.9
+      v_linear_max: 2.9
+      v_angular_min: -1.0
+      v_angular_max: 1.0
+      curvature_min: 0.4
+      curvature_max: 0.7
+      reduction_ratio_at_high_curvature: 0.6
+      curvature_forward_dist: 1.0
+      curvature_backward_dist: 0.3
+      max_velocity_scaling_factor_rate: 0.9
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 20.0
+      publish_frequency: 20.0
+      global_frame: odom
+      robot_base_frame: base_link_fake
+      #robot_base_frame: base_link
+      use_sim_time: False
+      rolling_window: true
+      width: 10
+      height: 10
+      resolution: 0.05
+      robot_radius: 0.15 #0.15
+      plugins: ["static_layer",  "obstacle_layer", "inflation_layer"]
+      #plugins: ["static_layer", "intensity_voxel_layer", "obstacle_layer", "inflation_layer"]
+      # plugins: ["static_layer", "obstacle_layer"]
+
+      #plugins: ["static_layer", "intensity_voxel_layer", "inflation_layer"]
+      #plugins: ["ground_consistency_layer", "inflation_layer"]
+      intensity_voxel_layer:
+        plugin: pb_nav2_costmap_2d::IntensityVoxelLayer
+        enabled: true
+        track_unknown_space: true
+        footprint_clearing_enabled: true
+        publish_voxel_map: false
+        combination_method: 1
+        mark_threshold: 0
+        origin_z: 0.0
+        unknown_threshold: 5
+        z_resolution: 0.05
+        z_voxels: 16
+        min_obstacle_height: 0.0
+        max_obstacle_height: 2.0
+        min_obstacle_intensity: -1000.0
+        max_obstacle_intensity: 1000.0
+        observation_sources: terrain_map
+        terrain_map:
+          data_type: PointCloud2
+          # '<robot_namespace>' keyword shall be replaced with 'namespace' where user defined.
+          # It doesn't need to start with '/'
+          topic: /terrain_map
+          sensor_frame: aft_mapped
+          min_obstacle_height: 0.0
+          max_obstacle_height: 2.0
+          obstacle_max_range: 5.0
+          obstacle_min_range: 0.2
+          
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 5.0
+        inflation_radius: 0.35 #0.5
+
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: livox 
+        max_obstacle_height: 1.0
+        min_obstacle_height: -1.0
+        livox:
+          topic: /scan
+          max_obstacle_height: 1.0
+          min_obstacle_height: -1.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 6.0       #?
+          raytrace_min_range: 0.2
+          obstacle_max_range: 6.0
+          obstacle_min_range: 0.2
+
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+      always_send_full_costmap: True
+
+      ground_consistency_layer:
+        plugin: "nav2_ground_consistency_costmap_plugin::GroundConsistencyLayer"
+        # Input topics
+        ground_points_topic: "/ground"
+        nonground_points_topic: "/nonground"
+        tf_timeout: 0.1
+        
+        # Robot dimensions
+        robot_height: 1.75
+        min_clearance: 0.1
+        maximum_height_filter: 5.0
+        
+        # Evidence accumulation
+        ground_inc: 1.0
+        nonground_inc: 1.5
+        
+        # Decay rates (per update cycle)
+        ground_decay: 0.80
+        nonground_decay: 0.65
+        
+        # Thresholds
+        nonground_occ_thresh: 2.0
+        nonground_prob_thresh: 0.750
+        max_score: 50.0
+        
+        # Performance & memory
+        max_data_range: 50.0
+        discretize_costs: false
+        footprint_clearing_enabled: true
+        
+        # Gap interpolation
+        ground_neighbor_search_cells: 0
+        
+        # Logging
+        enable_kpi_logging: false
+      
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 20.0
+      publish_frequency: 20.0
+      global_frame: map
+      robot_base_frame: base_link_fake
+      #robot_base_frame: base_link
+      use_sim_time: False
+      robot_radius: 0.15
+      resolution: 0.05
+      track_unknown_space: true
+      plugins: ["static_layer",  "obstacle_layer", "inflation_layer"]
+      #plugins: ["static_layer", "intensity_voxel_layer", "obstacle_layer", "inflation_layer"]
+      # plugins: ["static_layer","inflation_layer"]
+      # plugins: ["static_layer", "intensity_voxel_layer", "inflation_layer"]
+      intensity_voxel_layer:
+        plugin: pb_nav2_costmap_2d::IntensityVoxelLayer
+        enabled: true
+        track_unknown_space: true
+        footprint_clearing_enabled: true
+        publish_voxel_map: false
+        combination_method: 1
+        mark_threshold: 0
+        origin_z: 0.0
+        unknown_threshold: 5
+        z_resolution: 0.05
+        z_voxels: 16
+        min_obstacle_height: 0.0
+        max_obstacle_height: 2.0
+        min_obstacle_intensity: 0.1
+        max_obstacle_intensity: 2.0
+        observation_sources: terrain_map_ext
+        terrain_map_ext:
+          data_type: PointCloud2
+          # '<robot_namespace>' keyword shall be replaced with 'namespace' where user defined.
+          # It doesn't need to start with '/'
+          topic: /terrain_map_ext
+          sensor_frame: odom
+          min_obstacle_height: 0.0
+          max_obstacle_height: 2.0
+          obstacle_max_range: 5.0
+          obstacle_min_range: 0.2
+
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: livox 
+        max_obstacle_height: 100.0
+        min_obstacle_height: -100.0
+        livox:
+          topic: /scan
+          max_obstacle_height: 100.0
+          min_obstacle_height: -100.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 10.0
+          raytrace_min_range: 0.1
+          obstacle_max_range: 10.0
+          obstacle_min_range: 0.1
+
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+        enabled: True
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 5.0  # 系数越小,从机器人半径减小的斜率越小,外围代价越大
+        inflation_radius: 0.45  #0.55
+      always_send_full_costmap: True
+
+
+map_server:
+  ros__parameters :
+    use_sim_time: False
+    # Overridden in launch by the "map" launch configuration or provided default value.
+    # To use in yaml, remove the default "map" value in the tb3_simulation_launch.py file & provide full path to map below.
+    yaml_filename: ""
+
+map_saver:
+  ros__parameters:
+    use_sim_time: False
+    save_map_timeout: 5.0
+    free_thresh_default: 0.25
+    occupied_thresh_default: 0.65
+    map_subscribe_transient_local: True
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    use_sim_time: False
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner::NavfnPlanner"
+      tolerance: 0.2
+      use_astar: false
+      allow_unknown: true
+      use_final_approach_orientation: true
+    # GridBased:
+    #   plugin: "nav2_theta_star_planner/ThetaStarPlanner" # In Iron and older versions, "/" was used instead of "::"
+    #   how_many_corners: 8
+    #   w_euc_cost: 1.0
+    #   w_traversal_cost: 2.0
+      w_heuristic_cost: 1.0
+    # planner_plugins: ["TopoPlanner"]
+
+#     TopoPlanner:
+#       plugin: "topology_global_planner::TopologyGlobalPlanner"
+#       topology_yaml: "reference_navigation/src/navigation/topology_global_planner/config/601.yaml"
+#       use_topology: true
+#       fallback_to_inner_planner: true
+#       allow_nearest_region_fallback: false
+#       region_boundary_tolerance: 0.03
+#       transform_tolerance: 0.1
+#       duplicate_pose_tolerance: 0.02
+#       max_nearest_region_distance: 1.0   # only used when allow_nearest_region_fallback=true
+#       portal_sample_count: 5             # coarse samples per portal line
+#       portal_adaptive_sampling: true      # coarse-to-fine local refinement around the best coarse sample
+#       portal_refine_sample_count: 5       # local refined samples; 5 is usually enough
+
+#       # Region constraint for each segmented inner-planner path.
+#       # Example route R3 -> R5 -> R4: the C35 -> C54 segment must stay inside R5.
+#       enforce_region_constraint: true
+#       region_constraint_tolerance: 0.15   # meters; allow small boundary/portal tolerance
+
+#       inner_planner_name: "InnerPlanner"
+#       inner_planner_plugin: "nav2_navfn_planner::NavfnPlanner"
+
+#     InnerPlanner:
+#       plugin: "nav2_navfn_planner::NavfnPlanner"
+#       tolerance: 0.5
+#       use_astar: true
+#       allow_unknown: false
+
+# connector_action_manager:
+#   ros__parameters:
+#     map_frame_id: "map"
+#     robot_base_frame_id: "base_link_fake"
+#     gimbal_region_cmd_topic: "/serial/gimbal_region_cmd"
+#     chassis_alignment_enabled: true
+#     publish_default_chassis_cmd: true
+#     alignment_stop_spin_duration: 0.5
+
+
+smoother_server:
+  ros__parameters:
+    costmap_topic: global_costmap/costmap_raw
+    footprint_topic: global_costmap/published_footprint
+    robot_base_frame: base_link_fake
+    transform_timeout: 0.1
+    smoother_plugins: ["simple_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      do_refinement: True
+    # curvature_smoother:
+    #   plugin: "nav2_ceres_costaware_smoother::CeresCostawareSmoother"
+
+
+behavior_server:
+  ros__parameters:
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait" , "escape","bumpy_escape"]
+    spin:
+      plugin: "nav2_behaviors::Spin"
+    backup:
+      plugin: "nav2_behaviors::BackUp"
+    escape:
+      plugin: "nav2_behaviors/Escape"
+    bumpy_escape:
+      plugin: "nav2_behaviors::BumpyEscape"
+    drive_on_heading:
+      plugin: "nav2_behaviors::DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors::Wait"
+    assisted_teleop:
+      plugin: "nav2_behaviors::AssistedTeleop"
+    global_frame: odom
+    robot_base_frame: base_link_fake
+    #robot_base_frame: base_link
+    transform_tolerance: 0.2
+    use_sim_time: False
+    simulate_ahead_time: 2.0
+    max_rotational_vel: 1.0
+    min_rotational_vel: 0.4
+    rotational_acc_lim: 3.2
+    collision_check: false
+
+
+robot_state_publisher:
+  ros__parameters:
+    use_sim_time: False
+
+waypoint_follower:
+  ros__parameters:
+    use_sim_time: False
+    loop_rate: 5
+    stop_on_failure: false
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: True
+      waypoint_pause_duration: 200
+
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: False
+    smoothing_frequency: 80.0 #5.0
+    scale_velocities: False
+    feedback: "OPEN_LOOP"
+    max_velocity: [15.0, 15.0, 2.5]
+    min_velocity: [-15.0, -15.0, -2.5]
+    max_accel: [5.0, 5.0, 5.0]
+    max_decel: [-5.0, -5.0, -5.0]
+    odom_topic: "/odom"
+    odom_duration: 0.1

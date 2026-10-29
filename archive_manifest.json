@@ -1,0 +1,114 @@
+{
+  "purpose": "Historical archive; not a new S-curve test implementation",
+  "archive_date": "2026-10-29",
+  "source_workspace_files": [
+    {
+      "source_relative_path": "ground.pgm",
+      "archive_path": "maps/ground.pgm",
+      "sha256": "e6132a6c141342b58ed7e6efdeba074cb2e3fd9b147a0f88dc295518654b52ca"
+    },
+    {
+      "source_relative_path": "ground.yaml",
+      "archive_path": "maps/ground.yaml",
+      "sha256": "be0ff1541928176ecda1146f5bc202d00ffb8418f5743c63011f7f0165936e14"
+    },
+    {
+      "source_relative_path": "src/control_server_param_ui/README.md",
+      "archive_path": "src/control_server_param_ui/README.md",
+      "sha256": "1da79e640fdefb0ee04f06fa810e1e2365d015d0fc5d7b8c238c9ca4a815305a"
+    },
+    {
+      "source_relative_path": "src/control_server_param_ui/control_server_param_ui.py",
+      "archive_path": "src/control_server_param_ui/control_server_param_ui.py",
+      "sha256": "28449ddf3577549162848dd73381bd49b5d3de19f4147c84bb2400e28e34088f"
+    },
+    {
+      "source_relative_path": "src/map_edit/CMakeLists.txt",
+      "archive_path": "src/map_edit/CMakeLists.txt",
+      "sha256": "b1f30e0825dd4768aada7b23e7e4253b8f38384d5cab2ef67f443815b42cb116"
+    },
+    {
+      "source_relative_path": "src/map_edit/include/map_edit/map_edit_panel.h",
+      "archive_path": "src/map_edit/include/map_edit/map_edit_panel.h",
+      "sha256": "0f90544d67331cff85589719b2a27f492cd59f190d9f24b9f80dbf8466220e43"
+    },
+    {
+      "source_relative_path": "src/map_edit/include/map_edit/map_eraser_tool.h",
+      "archive_path": "src/map_edit/include/map_edit/map_eraser_tool.h",
+      "sha256": "edc2b44b132ad58119c75197ba9228646dd8bfd15ba195127590a6c3c2eed072"
+    },
+    {
+      "source_relative_path": "src/map_edit/include/map_edit/tool_manager.h",
+      "archive_path": "src/map_edit/include/map_edit/tool_manager.h",
+      "sha256": "13ef73b5b67979d1341bd1731a02054867e4dfae8b7e349e96f429f0854566b2"
+    },
+    {
+      "source_relative_path": "src/map_edit/launch/mapeidt.launch.py",
+      "archive_path": "src/map_edit/launch/mapeidt.launch.py",
+      "sha256": "188388a2beaff2a777ff879b30b8a214aa47304832feecc39566d1a8656ed513"
+    },
+    {
+      "source_relative_path": "src/map_edit/package.xml",
+      "archive_path": "src/map_edit/package.xml",
+      "sha256": "0790795c1923344fc5d3c247fb6bee5e7a70c93c58073e1379fafc6076bd6b32"
+    },
+    {
+      "source_relative_path": "src/map_edit/plugin_description.xml",
+      "archive_path": "src/map_edit/plugin_description.xml",
+      "sha256": "1797242d650726c83f599dac1d347548e564a387646b6186ff6caf60f1a8eb76"
+    },
+    {
+      "source_relative_path": "src/map_edit/readme.md",
+      "archive_path": "src/map_edit/readme.md",
+      "sha256": "c214e088002d98653c7ee1276693f44d75a4ed70c99c161d376760e283a04bf4"
+    },
+    {
+      "source_relative_path": "src/map_edit/resource/image-3.png",
+      "archive_path": "src/map_edit/resource/image-3.png",
+      "sha256": "fbd6d3e391f957ba8b55f7933dc7ee56f8c37d6c378dee42b93f03fec40673b7"
+    },
+    {
+      "source_relative_path": "src/map_edit/resource/image.png",
+      "archive_path": "src/map_edit/resource/image.png",
+      "sha256": "0601960194c4fe88a9e2a0d70a645e597ec22939b3315d6ef513257f855babc2"
+    },
+    {
+      "source_relative_path": "src/map_edit/rviz/default.rviz",
+      "archive_path": "src/map_edit/rviz/default.rviz",
+      "sha256": "9611bfaef9b015945d25d2f57ee4d3cc714a93c853e9a5267f29c9a5fbe7f61c"
+    },
+    {
+      "source_relative_path": "src/map_edit/src/map_edit_panel.cpp",
+      "archive_path": "src/map_edit/src/map_edit_panel.cpp",
+      "sha256": "34921105a7ab74dd8a10ac0f5c0a3d58f21d4c8a597a5561b3f6e3d5065e7768"
+    },
+    {
+      "source_relative_path": "src/map_edit/src/map_eraser_tool.cpp",
+      "archive_path": "src/map_edit/src/map_eraser_tool.cpp",
+      "sha256": "c41a726c49eb8f38f97bf7a97ac34168a2bb1f98916c5fa239523ae11d6447e2"
+    },
+    {
+      "source_relative_path": "src/map_edit/src/tool_manager.cpp",
+      "archive_path": "src/map_edit/src/tool_manager.cpp",
+      "sha256": "2f66fd3b22757b2bb8e2d259af39ee7f6fca0d15576567b6c332105fba075608"
+    }
+  ],
+  "navigation_reference": {
+    "repository": "https://github.com/ECUST-Origin-Sentry-Team/origin_nav2026_developing",
+    "base_commit": "cb3b261d6b3fada6efc9214ff66df296615a211c",
+    "includes_uncommitted_parameter_changes": true,
+    "path_normalization": "Behavior tree paths use config/behavior_tree; other original workspace paths use reference_navigation placeholders. Resolve paths before reuse."
+  },
+  "map_edit_reference": {
+    "repository": "https://github.com/Tony-tpc/map_edit",
+    "base_commit": "5bac87eee0f65ca7ce92a77fb72b20362491c363",
+    "includes_uncommitted_source_changes": true
+  },
+  "excluded": [
+    "build/",
+    "install/",
+    "log/",
+    "nested .git directories",
+    "__pycache__/"
+  ]
+}
